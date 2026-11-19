@@ -30,7 +30,7 @@ header {
 
 .logo {
   color: #5546d8;
-  font-size: 25px;
+  font-size: 24px;
   font-weight: bold;
 }
 
@@ -75,22 +75,25 @@ header {
 }
 
 .section-title {
-  margin: 25px 0 15px;
+  margin: 30px 0 15px;
 }
 
-.course-card {
+.course-card, .material-card {
   background: white;
   padding: 20px;
   margin-bottom: 15px;
   border-radius: 15px;
+  box-shadow: 0 3px 12px #00000008;
 }
 
-.course-card p {
+.course-card p, .material-card p {
   color: #777;
   margin-top: 8px;
+  line-height: 1.5;
 }
 
-button {
+button, .download-btn {
+  display: inline-block;
   background: #5546d8;
   color: white;
   border: none;
@@ -98,11 +101,32 @@ button {
   border-radius: 9px;
   margin-top: 12px;
   cursor: pointer;
+  text-decoration: none;
+  font-size: 14px;
 }
 
 .add-course {
   width: 100%;
   font-size: 16px;
+}
+
+.material-card {
+  border-left: 4px solid #5546d8;
+}
+
+.material-icon {
+  font-size: 30px;
+  margin-bottom: 10px;
+}
+
+.material-tag {
+  display: inline-block;
+  background: #eeeaff;
+  color: #5546d8;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  margin-top: 10px;
 }
 
 nav {
@@ -114,18 +138,25 @@ nav {
   bottom: 0;
   margin-top: 30px;
   box-shadow: 0 -2px 10px #00000010;
+  z-index: 10;
 }
 
 nav a {
   color: #5546d8;
   text-decoration: none;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 footer {
   text-align: center;
   padding: 25px;
   color: #777;
+}
+
+@media (max-width: 350px) {
+  nav a {
+    font-size: 10px;
+  }
 }
 </style>
 </head>
@@ -137,7 +168,7 @@ footer {
   <div>👤 Student</div>
 </header>
 
-<section class="hero">
+<section class="hero" id="home">
   <h1>Welcome to StudyHub!</h1>
   <p>Your academic journey starts here.
   Learn smarter, stay organised and achieve more.</p>
@@ -148,13 +179,14 @@ footer {
   <h2>Your Dashboard</h2>
 
   <div class="stats">
+
     <div class="stat-card">
       <h2>0 🔥</h2>
       <p>Study Streak</p>
     </div>
 
     <div class="stat-card">
-      <h2>0 📚</h2>
+      <h2 id="courseCount">0 📚</h2>
       <p>My Courses</p>
     </div>
 
@@ -167,28 +199,69 @@ footer {
       <h2>0 ⏰</h2>
       <p>Study Hours</p>
     </div>
+
   </div>
 
-  <h2 class="section-title">My Courses</h2>
+  <!-- MY COURSES -->
 
-  <div id="courses">
-    <div class="course-card">
-      <h3>Welcome to StudyHub!</h3>
-      <p>Your courses will appear here.</p>
-    </div>
-  </div>
+  <h2 class="section-title" id="courses">My Courses</h2>
+
+  <div id="courseList"></div>
 
   <button class="add-course" onclick="addCourse()">
     + Add My Own Course
   </button>
 
+  <!-- STUDY MATERIALS -->
+
+  <h2 class="section-title" id="materials">
+    📚 Study Materials
+  </h2>
+
+  <p style="color:#777; margin-bottom:15px;">
+    Access your learning resources and study documents.
+  </p>
+
+  <div class="material-card">
+
+    <div class="material-icon">📄</div>
+
+    <h3>Entrepreneurial Economics – Topic 5</h3>
+
+    <p>Study document for Entrepreneurial Economics students.</p>
+
+    <span class="material-tag">PDF Document</span>
+
+    <br>
+
+    <a
+      class="download-btn"
+      href="https://raw.githubusercontent.com/Akinolaaishatkehinde/KennyAishat/main/Entrepreneurial%20Economics-%20Topic%205.docx.pdf"
+      target="_blank"
+      rel="noopener">
+      ⬇ Download Material
+    </a>
+
+  </div>
+
+  <!-- TIMETABLE -->
+
+  <h2 class="section-title" id="timetable">
+    📅 Study Timetable
+  </h2>
+
+  <div class="course-card">
+    <h3>Plan your study sessions</h3>
+    <p>Organise your daily reading activities and stay consistent.</p>
+  </div>
+
 </div>
 
 <nav>
-  <a href="#">🏠 Home</a>
+  <a href="#home">🏠 Home</a>
   <a href="#courses">📚 Courses</a>
-  <a href="#">📅 Timetable</a>
-  <a href="#">👤 Profile</a>
+  <a href="#materials">📄 Materials</a>
+  <a href="#timetable">📅 Timetable</a>
 </nav>
 
 <footer>
@@ -196,27 +269,64 @@ footer {
 </footer>
 
 <script>
+
+let courses = JSON.parse(
+  localStorage.getItem("studyhubCourses") || "[]"
+);
+
+function displayCourses() {
+
+  const list = document.getElementById("courseList");
+
+  list.innerHTML = "";
+
+  courses.forEach(function(name) {
+
+    const card = document.createElement("div");
+    card.className = "course-card";
+
+    const title = document.createElement("h3");
+    title.textContent = name;
+
+    const description = document.createElement("p");
+    description.textContent = "Your personal course";
+
+    card.appendChild(title);
+    card.appendChild(description);
+
+    list.appendChild(card);
+
+  });
+
+  document.getElementById("courseCount").textContent =
+    courses.length + " 📚";
+
+}
+
 function addCourse() {
+
   let name = prompt("Enter your course name:");
 
   if (name && name.trim() !== "") {
-    let course = document.createElement("div");
-    course.className = "course-card";
 
-    let title = document.createElement("h3");
-    title.textContent = name.trim();
+    courses.push(name.trim());
 
-    let description = document.createElement("p");
-    description.textContent = "Your personal course";
+    localStorage.setItem(
+      "studyhubCourses",
+      JSON.stringify(courses)
+    );
 
-    course.appendChild(title);
-    course.appendChild(description);
+    displayCourses();
 
-    document.getElementById("courses").appendChild(course);
+    alert("Your course has been added successfully!");
+
   }
+
 }
+
+displayCourses();
+
 </script>
 
 </body>
-  </html>
-  
+</html>
