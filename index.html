@@ -105,6 +105,11 @@ button, .download-btn {
   font-size: 14px;
 }
 
+button:disabled {
+  background: #aaa;
+  cursor: not-allowed;
+}
+
 .add-course {
   width: 100%;
   font-size: 16px;
@@ -127,6 +132,66 @@ button, .download-btn {
   border-radius: 20px;
   font-size: 12px;
   margin-top: 10px;
+}
+
+/* PDF READER */
+
+.reader {
+  background: #f4f6fb;
+  padding: 12px;
+  border-radius: 12px;
+  margin-top: 18px;
+}
+
+.reader-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+#readerStatus {
+  color: #777;
+  font-size: 12px;
+}
+
+.pdf-page {
+  background: white;
+  padding: 5px;
+  border-radius: 8px;
+  overflow: hidden;
+  min-height: 250px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+#pdfCanvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  background: white;
+}
+
+.reader-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 15px;
+}
+
+.reader-controls button {
+  margin-top: 0;
+}
+
+#pageInfo {
+  color: #5546d8;
+  font-size: 13px;
+  font-weight: bold;
 }
 
 nav {
@@ -157,6 +222,10 @@ footer {
   nav a {
     font-size: 10px;
   }
+
+  .reader-controls button {
+    padding: 10px;
+  }
 }
 </style>
 </head>
@@ -170,8 +239,10 @@ footer {
 
 <section class="hero" id="home">
   <h1>Welcome to StudyHub!</h1>
-  <p>Your academic journey starts here.
-  Learn smarter, stay organised and achieve more.</p>
+  <p>
+    Your academic journey starts here.
+    Learn smarter, stay organised and achieve more.
+  </p>
 </section>
 
 <div class="container">
@@ -219,7 +290,7 @@ footer {
   </h2>
 
   <p style="color:#777; margin-bottom:15px;">
-    Access your learning resources and study documents.
+    Read your course materials directly on StudyHub.
   </p>
 
   <div class="material-card">
@@ -228,19 +299,50 @@ footer {
 
     <h3>Entrepreneurial Economics – Topic 5</h3>
 
-    <p>Study document for Entrepreneurial Economics students.</p>
+    <p>
+      Study document for Entrepreneurial Economics students.
+    </p>
 
     <span class="material-tag">PDF Document</span>
 
-    <br>
+    <!-- ONLINE PDF READER -->
 
-    <a
-      class="download-btn"
-      href="https://raw.githubusercontent.com/Akinolaaishatkehinde/KennyAishat/main/Entrepreneurial%20Economics-%20Topic%205.docx.pdf"
-      target="_blank"
-      rel="noopener">
-      ⬇ Download Material
-    </a>
+    <div class="reader">
+
+      <div class="reader-toolbar">
+        <strong>📖 Online Reading</strong>
+        <span id="readerStatus">Loading document...</span>
+      </div>
+
+      <div class="pdf-page">
+        <canvas id="pdfCanvas"></canvas>
+      </div>
+
+      <div class="reader-controls">
+
+        <button id="prevPage" onclick="changePage(-1)" disabled>
+          ← Previous
+        </button>
+
+        <span id="pageInfo">Page 0 of 0</span>
+
+        <button id="nextPage" onclick="changePage(1)" disabled>
+          Next →
+        </button>
+
+      </div>
+
+      <div class="reader-controls">
+        <button onclick="changeZoom(-0.2)">
+          − Zoom out
+        </button>
+
+        <button onclick="changeZoom(0.2)">
+          + Zoom in
+        </button>
+      </div>
+
+    </div>
 
   </div>
 
@@ -252,7 +354,9 @@ footer {
 
   <div class="course-card">
     <h3>Plan your study sessions</h3>
-    <p>Organise your daily reading activities and stay consistent.</p>
+    <p>
+      Organise your daily reading activities and stay consistent.
+    </p>
   </div>
 
 </div>
@@ -268,7 +372,142 @@ footer {
   <p>StudyHub © 2026 | Learn. Grow. Succeed.</p>
 </footer>
 
+<!-- PDF.JS LIBRARY -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
 <script>
+
+// =================================
+// STUDYHUB PDF READER
+// =================================
+
+const pdfUrl = "https://raw.githubusercontent.com/Akinolaaishatkehinde/KennyAishat/main/Entrepreneurial%20Economics-%20Topic%205.docx.pdf";
+
+let pdfDocument = null;
+let currentPage = 1;
+let zoom = 1.2;
+let rendering = false;
+
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+async function loadPDF() {
+
+  const status = document.getElementById("readerStatus");
+
+  try {
+
+    pdfDocument = await pdfjsLib.getDocument(pdfUrl).promise;
+
+    status.textContent = "Document loaded successfully";
+
+    currentPage = 1;
+
+    await renderPage(currentPage);
+
+  } catch (error) {
+
+    status.textContent =
+      "Could not load document. Please refresh and try again.";
+
+    console.error("PDF loading error:", error);
+
+  }
+
+}
+
+async function renderPage(pageNumber) {
+
+  if (!pdfDocument || rendering) return;
+
+  rendering = true;
+
+  try {
+
+    const page = await pdfDocument.getPage(pageNumber);
+
+    const canvas = document.getElementById("pdfCanvas");
+    const context = canvas.getContext("2d");
+
+    const baseViewport = page.getViewport({ scale: zoom });
+
+    const screenScale = Math.min(
+      1,
+      (window.innerWidth - 60) / baseViewport.width
+    );
+
+    const viewport = page.getViewport({
+      scale: zoom * screenScale
+    });
+
+    const pixelRatio = window.devicePixelRatio || 1;
+
+    canvas.width = viewport.width * pixelRatio;
+    canvas.height = viewport.height * pixelRatio;
+
+    canvas.style.width = viewport.width + "px";
+    canvas.style.height = viewport.height + "px";
+
+    await page.render({
+      canvasContext: context,
+      viewport: viewport,
+      transform: [pixelRatio, 0, 0, pixelRatio, 0, 0]
+    }).promise;
+
+    document.getElementById("pageInfo").textContent =
+      "Page " + currentPage + " of " + pdfDocument.numPages;
+
+    document.getElementById("prevPage").disabled =
+      currentPage <= 1;
+
+    document.getElementById("nextPage").disabled =
+      currentPage >= pdfDocument.numPages;
+
+  } catch (error) {
+
+    console.error("Page rendering error:", error);
+
+    document.getElementById("readerStatus").textContent =
+      "Unable to display this page.";
+
+  } finally {
+
+    rendering = false;
+
+  }
+
+}
+
+async function changePage(direction) {
+
+  if (!pdfDocument || rendering) return;
+
+  const nextPage = currentPage + direction;
+
+  if (nextPage >= 1 && nextPage <= pdfDocument.numPages) {
+
+    currentPage = nextPage;
+
+    await renderPage(currentPage);
+
+  }
+
+}
+
+async function changeZoom(amount) {
+
+  if (!pdfDocument || rendering) return;
+
+  zoom = Math.max(0.6, Math.min(2.5, zoom + amount));
+
+  await renderPage(currentPage);
+
+}
+
+// =================================
+// MY COURSES
+// =================================
 
 let courses = JSON.parse(
   localStorage.getItem("studyhubCourses") || "[]"
@@ -325,6 +564,8 @@ function addCourse() {
 }
 
 displayCourses();
+
+loadPDF();
 
 </script>
 
