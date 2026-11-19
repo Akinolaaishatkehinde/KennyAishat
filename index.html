@@ -1,0 +1,222 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyHub | Student Learning</title>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background: #f4f6fb;
+  color: #20243a;
+}
+
+header {
+  background: white;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 10px #00000010;
+}
+
+.logo {
+  color: #5546d8;
+  font-size: 25px;
+  font-weight: bold;
+}
+
+.hero {
+  background: linear-gradient(135deg, #5546d8, #8878f5);
+  color: white;
+  margin: 20px;
+  padding: 30px 22px;
+  border-radius: 18px;
+}
+
+.hero h1 {
+  font-size: 27px;
+  margin-bottom: 12px;
+}
+
+.hero p {
+  line-height: 1.6;
+}
+
+.container {
+  padding: 20px;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  margin: 20px 0;
+}
+
+.stat-card {
+  background: white;
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 3px 12px #00000008;
+}
+
+.stat-card h2 {
+  color: #5546d8;
+  margin-bottom: 8px;
+}
+
+.section-title {
+  margin: 25px 0 15px;
+}
+
+.course-card {
+  background: white;
+  padding: 20px;
+  margin-bottom: 15px;
+  border-radius: 15px;
+}
+
+.course-card p {
+  color: #777;
+  margin-top: 8px;
+}
+
+button {
+  background: #5546d8;
+  color: white;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 9px;
+  margin-top: 12px;
+  cursor: pointer;
+}
+
+.add-course {
+  width: 100%;
+  font-size: 16px;
+}
+
+nav {
+  display: flex;
+  justify-content: space-around;
+  background: white;
+  padding: 17px 5px;
+  position: sticky;
+  bottom: 0;
+  margin-top: 30px;
+  box-shadow: 0 -2px 10px #00000010;
+}
+
+nav a {
+  color: #5546d8;
+  text-decoration: none;
+  font-size: 13px;
+}
+
+footer {
+  text-align: center;
+  padding: 25px;
+  color: #777;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">StudyHub 🎓</div>
+  <div>👤 Student</div>
+</header>
+
+<section class="hero">
+  <h1>Welcome to StudyHub!</h1>
+  <p>Your academic journey starts here.
+  Learn smarter, stay organised and achieve more.</p>
+</section>
+
+<div class="container">
+
+  <h2>Your Dashboard</h2>
+
+  <div class="stats">
+    <div class="stat-card">
+      <h2>0 🔥</h2>
+      <p>Study Streak</p>
+    </div>
+
+    <div class="stat-card">
+      <h2>0 📚</h2>
+      <p>My Courses</p>
+    </div>
+
+    <div class="stat-card">
+      <h2>0%</h2>
+      <p>Progress</p>
+    </div>
+
+    <div class="stat-card">
+      <h2>0 ⏰</h2>
+      <p>Study Hours</p>
+    </div>
+  </div>
+
+  <h2 class="section-title">My Courses</h2>
+
+  <div id="courses">
+    <div class="course-card">
+      <h3>Welcome to StudyHub!</h3>
+      <p>Your courses will appear here.</p>
+    </div>
+  </div>
+
+  <button class="add-course" onclick="addCourse()">
+    + Add My Own Course
+  </button>
+
+</div>
+
+<nav>
+  <a href="#">🏠 Home</a>
+  <a href="#courses">📚 Courses</a>
+  <a href="#">📅 Timetable</a>
+  <a href="#">👤 Profile</a>
+</nav>
+
+<footer>
+  <p>StudyHub © 2026 | Learn. Grow. Succeed.</p>
+</footer>
+
+<script>
+function addCourse() {
+  let name = prompt("Enter your course name:");
+
+  if (name && name.trim() !== "") {
+    let course = document.createElement("div");
+    course.className = "course-card";
+
+    let title = document.createElement("h3");
+    title.textContent = name.trim();
+
+    let description = document.createElement("p");
+    description.textContent = "Your personal course";
+
+    course.appendChild(title);
+    course.appendChild(description);
+
+    document.getElementById("courses").appendChild(course);
+  }
+}
+</script>
+
+</body>
+  </html>
+  
